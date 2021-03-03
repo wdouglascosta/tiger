@@ -116,6 +116,8 @@ do        {adjust(); return DO;}
 of        {adjust(); return OF;}
 nil       {adjust(); return NIL;}
 bool      {adjust(); return BOOL;}
+true      {adjust(); return TRUE;}
+false     {adjust(); return FALSE;}
 
   /* Punctuation symbols of the language. */
 ","   {adjust(); return COMMA;}

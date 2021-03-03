@@ -67,3 +67,5 @@ extern YYSTYPE yylval;
 # define VAR 298
 # define TYPE 299
 # define BOOL 300
+# define TRUE 301
+# define FALSE 302
