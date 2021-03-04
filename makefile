@@ -3,7 +3,7 @@
 CFLAGS = -g -Wall -Wextra
 CC = gcc
 
-lextest: driver.o lex.yy.o errormsg.o util.o
+lextest: driver.o lex.yy.o errormsg.o util.o tiger.tab.c
 	$(CC) $(CFLAGS) -o lextest driver.o lex.yy.o errormsg.o util.o
 
 driver.o: driver.c tokens.h errormsg.h util.h
@@ -21,5 +21,8 @@ lex.yy.c: tiger.lex
 util.o: util.c util.h
 	$(CC) $(CFLAGS) -c util.c
 
+tiger.tab.c: 
+	bison -d -l -v tiger.y
+
 clean: 
-	rm -f lextest *.o lex.yy.c
+	rm -f lextest *.o lex.yy.c *.tab.c *.tab.h *.output
