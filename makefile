@@ -22,7 +22,10 @@ util.o: util.c util.h
 	$(CC) $(CFLAGS) -c util.c
 
 tiger.tab.c: 
-	bison -d -l -v tiger.y
+	bison -d -t -v tiger.y
 
 clean: 
 	rm -f lextest *.o lex.yy.c *.tab.c *.tab.h *.output
+
+compile:
+	gcc -g -o final lex.yy.o tiger.tab.c -lfl -lm 
