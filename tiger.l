@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "util.h"
-#include "tokens.h"
+#include "tiger.tab.h"
 #include "errormsg.h"
 
 /*
@@ -28,7 +28,7 @@ unsigned int string_buffer_capacity;
  */
 void init_string_buffer(void)
 {
-  string_buffer = checked_malloc(INITIAL_BUFFER_LENGTH);
+  string_buffer = (char *) checked_malloc(INITIAL_BUFFER_LENGTH);
   string_buffer[0] = 0;
   string_buffer_capacity = INITIAL_BUFFER_LENGTH;
 }
@@ -45,7 +45,7 @@ static void append_char_to_stringbuffer(char ch)
         char *temp;
 
         string_buffer_capacity *= 2;
-        temp = checked_malloc(string_buffer_capacity);
+        temp = (char *) checked_malloc(string_buffer_capacity);
         memcpy(temp, string_buffer, new_length);
         free(string_buffer);
         string_buffer = temp;
@@ -58,11 +58,11 @@ static void append_char_to_stringbuffer(char ch)
  * Make sure the scanner terminates by supplying our own yywrap() function and
  * making it return 1.  See also `man flex` for more information.
  */
-int yywrap(void)
-{
-  charPos = 1;
-  return 1;
-}
+// int yywrap(void)
+// {
+//   charPos = 1;
+//   return 1;
+// }
 
 /*
  * The EM_tokPos variable of the error message module errormsg.h is continually

@@ -8,9 +8,10 @@
 #include <stdarg.h>
 #include "util.h"
 #include "errormsg.h"
+#include <string>
 
 
-bool anyErrors = FALSE;
+bool anyErrors = FALS;
 
 static string fileName = "";
 
@@ -27,7 +28,7 @@ typedef struct intList {
 
 static IntList intList(int i, IntList rest) 
 {
-  IntList l = checked_malloc(sizeof *l);
+  IntList l = (struct intList *) checked_malloc(sizeof *l);
   l->i = i;
   l->rest = rest;
   return l;
@@ -47,7 +48,7 @@ void EM_error(int pos, char *message,...)
   IntList lines = linePos; 
   int num = lineNum;
 
-  anyErrors = TRUE;
+  anyErrors = TRU;
   while (lines && lines->i >= pos) {
     lines = lines->rest;
     num--;
@@ -67,7 +68,7 @@ void EM_error(int pos, char *message,...)
 
 void EM_reset(string fname)
 {
-  anyErrors = FALSE;
+  anyErrors = FALS;
   fileName = fname;
   lineNum = 1;
   linePos = intList(0, NULL);

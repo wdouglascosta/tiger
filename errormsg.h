@@ -2,13 +2,12 @@
  * Error message module, useful for producing error messages with file names
  * and line numbers.
  */
-
+#include <string.h>
 extern bool EM_anyErrors;
-
 void EM_newline(void);
 
 extern int EM_tokPos;
-
-void EM_error(int, string,...);
-void EM_impossible(string,...);
-void EM_reset(string filename);
+void yyerror(...);
+void EM_error(...);
+void EM_impossible(...);
+void EM_reset(...);
