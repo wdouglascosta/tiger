@@ -81,6 +81,7 @@ void adjust(void)
 /* We need these options to avoid some gcc compiler warnings. */
 %option nounput
 %option noinput
+%option noyywrap
 
 %x COMMENT STRING_STATE
 

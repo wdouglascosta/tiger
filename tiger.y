@@ -9,12 +9,16 @@ int yylex(void); /* function prototype */
 // {
 //   std::cerr<<s<<std::endl;
 // }
+ void yyerror (char const *s) {
+   fprintf (stderr, "%s\n", s);
+ }
 %}
 
 
 %union {
   int pos;
   int ival;
+  char* sval;
   // Var *var;
   // Exp *exp;
   // Dec *dec;

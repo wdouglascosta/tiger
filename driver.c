@@ -15,13 +15,14 @@ extern FILE * yyin;
  * Variável do flex.
  */
 extern int yydebug; 
+extern int yyparse(void);
 
 int main(int argc, char **argv) {
 
     // abre arquivo com o código fonte
     yyin = fopen(argv[1],"r");
     if (!yyin) {
-      printf(" Cannot open this file."); exit(1);
+      printf(" Nenhum arquivo de entrada válido!.\n"); exit(1);
     }
     yydebug = 0;
     // faz o parser do código fonte
