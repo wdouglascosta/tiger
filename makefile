@@ -6,7 +6,7 @@ CC = g++
 all: tc
 
 tc: driver.o errormsg.o util.o tiger.tab.o lex.yy.o
-	$(CC) $(CFLAGS) -o tc driver.o lex.yy.o errormsg.o util.o tiger.tab.o
+	$(CC) $(CFLAGS) -o tc.o driver.o lex.yy.o errormsg.o util.o tiger.tab.o
 
 driver.o: driver.c errormsg.h util.h
 	$(CC) $(CFLAGS) -c driver.c
