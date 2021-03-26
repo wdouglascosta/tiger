@@ -18,7 +18,7 @@ lex.yy.o: lex.yy.c errormsg.h util.h
 	$(CC) $(CFLAGS) -c lex.yy.c
 
 tiger.tab.o: tiger.tab.c
-	$(CC) $(CFLAGS) -c tiger.tab.c
+	$(CC) $(CFLAGS) -I/usr/lib/llvm-10/include -c tiger.tab.c
 
 lex.yy.c: tiger.l
 	lex tiger.l
