@@ -2,7 +2,8 @@
 int yylex(void); /* function prototype */
 #include "errormsg.h"
 #include "ast.h"
-#include <string>
+// #include <string>
+#include <stdio.h>
 
 // std::unique_ptr<Root> root;
 
@@ -20,22 +21,22 @@ int yylex(void); /* function prototype */
   int pos;
   int ival;
   char* sval;
-  Var *var;
-  Exp *exp;
-  Dec *dec;
-  Type *type;
-  Field *field;
+  // Var *var;
+  // Exp *exp;
+  // Dec *dec;
+  // Type *type;
+  // Field *field;
   //Efield *efield;
-  Root *root;
-  FunctionDec *functionDec;
-  TypeDec *typeDec;
-  std::vector<std::unique_ptr<Exp>> *expList;
-  std::vector<std::unique_ptr<Dec>> *decList;
-  std::vector<std::unique_ptr<Type>> *typeList;
-  std::vector<std::unique_ptr<Field>> *fieldList;
-  std::vector<std::unique_ptr<FieldExp>> *fieldExpList;
+  // Root *root;
+  // FunctionDec *functionDec;
+  // TypeDec *typeDec;
+  // std::vector<std::unique_ptr<Exp>> *expList;
+  // std::vector<std::unique_ptr<Dec>> *decList;
+  // std::vector<std::unique_ptr<Type>> *typeList;
+  // std::vector<std::unique_ptr<Field>> *fieldList;
+  // std::vector<std::unique_ptr<FieldExp>> *fieldExpList;
   //std::vector<std::unique_ptr<Efield>> *efieldList;
-  std::vector<std::unique_ptr<NameType>> *nametypeList;
+  // std::vector<std::unique_ptr<NameType>> *nametypeList;
 }
 
 %token <sval> ID STRING
@@ -75,8 +76,7 @@ int yylex(void); /* function prototype */
 %%
 
 prog:           root                            {root=std::unique_ptr<Root>($1);}
-                ;
-
+                
 root:           /* empty */                     {$$=nullptr;}
                 | exp								            {$$=new Root(std::unique_ptr<Exp>($1));}
 

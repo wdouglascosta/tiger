@@ -1,6 +1,8 @@
 #ifndef CODEGENCONTEXT_H
 #define CODEGENCONTEXT_H
+
 #include "ast.h"
+#include "symboltable.h"
 #include <llvm/IR/Constant.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/IRBuilder.h>
@@ -18,7 +20,6 @@
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Target/TargetOptions.h>
-#include "utils/symboltable.h"
 
 #include <set>
 
@@ -34,7 +35,7 @@ class CodeGenContext {
   llvm::LLVMContext context;
   llvm::IRBuilder<> builder{context};
   std::unique_ptr<llvm::Module> module{
-      llvm::make_unique<llvm::Module>("main", context)};
+      std::make_unique<llvm::Module>("main", context)};
   SymbolTable<AST::VarDec> valueDecs;
   SymbolTable<llvm::Type> types;
   SymbolTable<AST::Type> typeDecs;

@@ -1,4 +1,4 @@
-LLVM_INCLUDE = -I/usr/lib/llvm-10/include
+LLVM_INCLUDE = -I /usr/lib/llvm-10/include
 LLVM_LIBS = -L /usr/lib/llvm-10/lib
 
 #make full (delete dynamic files and generates lexical, syntactic and semantic analyzer files)
@@ -60,4 +60,4 @@ y.tab.c: tiger.y
 
 #make clean (delete dynamic files)
 clean: 
-	rm -f *.out* *.o lex parse lex.yy.c *.tab.c *.tab.h *.tab.grm *.h.gch *.output
+	rm -f *.out* *.o lex parse lex.yy.c y.tab.* *.tab.grm y.output *.h.gch

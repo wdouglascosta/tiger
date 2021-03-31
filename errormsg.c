@@ -8,7 +8,6 @@
 #include <stdarg.h>
 #include "util.h"
 #include "errormsg.h"
-#include <string>
 
 
 bool anyErrors = FALS;
