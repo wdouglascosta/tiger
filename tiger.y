@@ -4,13 +4,17 @@ int yylex(void); /* function prototype */
 #include "ast.h"
 // #include <string>
 #include <stdio.h>
+using namespace AST;
+#include <iostream>
+#include <llvm/ADT/STLExtras.h>
 
-// std::unique_ptr<Root> root;
+std::unique_ptr<Root> root;
 
-// void tigererror(char *s)
-// {
-//   std::cerr<<s<<std::endl;
-// }
+void tigererror(char *s)
+{
+  std::cerr<<s<<std::endl;
+}
+
  void yyerror (char const *s) {
    fprintf (stderr, "%s\n", s);
  }
@@ -20,23 +24,23 @@ int yylex(void); /* function prototype */
 %union {
   int pos;
   int ival;
-  char* sval;
-  // Var *var;
-  // Exp *exp;
-  // Dec *dec;
-  // Type *type;
-  // Field *field;
+  std::string *sval;
+  Var *var;
+  Exp *exp;
+  Dec *dec;
+  Type *type;
+  Field *field;
   //Efield *efield;
-  // Root *root;
-  // FunctionDec *functionDec;
-  // TypeDec *typeDec;
-  // std::vector<std::unique_ptr<Exp>> *expList;
-  // std::vector<std::unique_ptr<Dec>> *decList;
-  // std::vector<std::unique_ptr<Type>> *typeList;
-  // std::vector<std::unique_ptr<Field>> *fieldList;
-  // std::vector<std::unique_ptr<FieldExp>> *fieldExpList;
+  Root *root;
+  FunctionDec *functionDec;
+  TypeDec *typeDec;
+  std::vector<std::unique_ptr<Exp>> *expList;
+  std::vector<std::unique_ptr<Dec>> *decList;
+  std::vector<std::unique_ptr<Type>> *typeList;
+  std::vector<std::unique_ptr<Field>> *fieldList;
+  std::vector<std::unique_ptr<FieldExp>> *fieldExpList;
   //std::vector<std::unique_ptr<Efield>> *efieldList;
-  // std::vector<std::unique_ptr<NameType>> *nametypeList;
+  std::vector<std::unique_ptr<NameType>> *nametypeList;
 }
 
 %token <sval> ID STRING
@@ -109,11 +113,11 @@ exp:              INT                       		{$$=new IntExp($1);}
 
 reclist:        /* empty */                     {$$=new std::vector<std::unique_ptr<FieldExp>>();}
                 | id EQ exp							        {$$=new std::vector<std::unique_ptr<FieldExp>>();
-                                                  $$->push_back(llvm::make_unique<FieldExp>(*$1, std::unique_ptr<Exp>($3)));
+                                                  $$->push_back(std::make_unique<FieldExp>(*$1, std::unique_ptr<Exp>($3)));
                                                   delete $1;}
-                | id EQ exp	COMMA reclist		    {$$=$5; $5->push_back(llvm::make_unique<FieldExp>(*$1, std::unique_ptr<Exp>($3))); delete $1;}
+                | id EQ exp	COMMA reclist		    {$$=$5; $5->push_back(std::make_unique<FieldExp>(*$1, std::unique_ptr<Exp>($3))); delete $1;}
 
-let:              LET decs IN explist END			  {$$=new LetExp(std::move(*$2), llvm::make_unique<SequenceExp>(std::move(*$4)));}
+let:              LET decs IN explist END			  {$$=new LetExp(std::move(*$2), std::make_unique<SequenceExp>(std::move(*$4)));}
                 ;
 
 arglist:        /* empty */							        {$$=new std::vector<std::unique_ptr<Exp>>();}
@@ -137,7 +141,7 @@ dec:              tydec 							{$$=$1;}
                 //| tydec tydecs						{$$=new TypeDec(A_NametyList($1, $2->u.type));}
                 //;
 lvalue:           id %prec LOW              {$$=new SimpleVar(*$1); delete $1;}
-                | id LBRACK exp RBRACK 		  {$$=new SubscriptVar(llvm::make_unique<SimpleVar>(*$1), std::unique_ptr<Exp>($3)); delete $1;}
+                | id LBRACK exp RBRACK 		  {$$=new SubscriptVar(std::make_unique<SimpleVar>(*$1), std::unique_ptr<Exp>($3)); delete $1;}
                 | lvalue LBRACK exp RBRACK	{$$=new SubscriptVar(std::unique_ptr<Var>($1), std::unique_ptr<Exp>($3));}
                 | lvalue DOT id						  {$$=new FieldVar(std::unique_ptr<Var>($1), *$3); delete $3;}
                 ;
@@ -179,8 +183,8 @@ id:               ID								{$$=$1;}
                 //| fundec fundecs					{$$=A_FunctionDec(EM_tokPos, A_FundecList($1, $2->u.function));}
                 //;
 
-fundec:           FUNCTION id LPAREN tyfields RPAREN EQ exp				    {$$=new FunctionDec(*$2, llvm::make_unique<Prototype>(*$2, std::move(*$4), ""), std::unique_ptr<Exp>($7)); delete $2;}
-                | FUNCTION id LPAREN tyfields RPAREN COLON id EQ exp	{$$=new FunctionDec(*$2, llvm::make_unique<Prototype>(*$2, std::move(*$4), *$7), std::unique_ptr<Exp>($9)); delete $2;}
+fundec:           FUNCTION id LPAREN tyfields RPAREN EQ exp				    {$$=new FunctionDec(*$2, std::make_unique<Prototype>(*$2, std::move(*$4), ""), std::unique_ptr<Exp>($7)); delete $2;}
+                | FUNCTION id LPAREN tyfields RPAREN COLON id EQ exp	{$$=new FunctionDec(*$2, std::make_unique<Prototype>(*$2, std::move(*$4), *$7), std::unique_ptr<Exp>($9)); delete $2;}
                 ;
 
 

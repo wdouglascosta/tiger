@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "util.h"
-#include "tiger.tab.h"
+#include "y.tab.h"
 #include "errormsg.h"
 
 /*

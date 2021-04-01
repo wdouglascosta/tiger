@@ -43,8 +43,9 @@ driver.o: driver.c y.tab.h errormsg.h util.h
 errormsg.o: errormsg.c errormsg.h util.h
 	cc -g -c errormsg.c
 
-lex.yy.o: lex.yy.c y.tab.h errormsg.h util.h
-	cc -g -c lex.yy.c
+lex.yy.o: lex.yy.c errormsg.h util.h
+	cc -g -c -I/usr/lib/llvm-10/include lex.yy.c
+
 
 lex.yy.c: tiger.l
 	lex tiger.l
@@ -56,7 +57,7 @@ y.tab.o: y.tab.c
 	g++ $(LLVM_INCLUDE) -g -c y.tab.c
 
 y.tab.c: tiger.y
-	yacc -dv tiger.y
+	yacc -dtv tiger.y
 
 #make clean (delete dynamic files)
 clean: 
