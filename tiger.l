@@ -1,11 +1,18 @@
 %{
 
 #include <assert.h>
-#include <string.h>
 #include <stdlib.h>
 #include "util.h"
 #include "y.tab.h"
+#include "y.tab.c"
 #include "errormsg.h"
+
+#include "ast.h"
+#include <iostream>
+using namespace AST;
+#include <cstring>
+#include <unistd.h>
+
 
 /*
  * Variable to keep track of the position of each token, measured in characters

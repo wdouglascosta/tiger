@@ -44,8 +44,7 @@ errormsg.o: errormsg.c errormsg.h util.h
 	cc -g -c errormsg.c
 
 lex.yy.o: lex.yy.c errormsg.h util.h
-	cc -g -c -I/usr/lib/llvm-10/include lex.yy.c
-
+	g++ -g -c $(LLVM_INCLUDE) lex.yy.c
 
 lex.yy.c: tiger.l
 	lex tiger.l
@@ -61,4 +60,4 @@ y.tab.c: tiger.y
 
 #make clean (delete dynamic files)
 clean: 
-	rm -f *.out* *.o lex parse lex.yy.c *.tab.c *.tab.h *.tab.grm *.h.gch *.output
+	rm -f *.out* *.o lex parse lex.yy.c *.tab.c *.tab.h *.tab.grm *.h.gch *.output.yy.c *.tab.c *.tab.h *.output 
