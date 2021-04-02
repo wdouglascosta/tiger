@@ -35,7 +35,7 @@ parse.o: parse.c errormsg.h util.h
 
 #make lex (generates the lexical analyzer files)
 lex: y.tab.o lex.yy.o driver.o errormsg.o util.o
-	cc -g -o lex y.tab.o driver.o lex.yy.o errormsg.o util.o 
+	g++ -g -o lex y.tab.o driver.o lex.yy.o errormsg.o util.o 
 
 driver.o: driver.c y.tab.h errormsg.h util.h
 	cc -g -c driver.c
@@ -60,4 +60,4 @@ y.tab.c: tiger.y
 
 #make clean (delete dynamic files)
 clean: 
-	rm -f *.out* *.o lex parse lex.yy.c *.tab.c *.tab.h *.tab.grm *.h.gch *.output.yy.c *.tab.c *.tab.h *.output 
+	rm -f *.out* *.o lex parse lex.yy.c *.tab.c *.tab.h *.tab.grm *.h.gch *.output.yy.c *.tab.c *.tab.h *.output

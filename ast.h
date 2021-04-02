@@ -39,6 +39,9 @@ class Var : public Node {
 class Exp : public Node {
 };
 
+class Identifier : public Node {
+};
+
 class Root : public Node {
   unique_ptr<Exp> root_;
   vector<VarDec *> mainVariableTable_;

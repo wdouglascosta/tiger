@@ -1,46 +1,44 @@
 %{
-int yylex(void); /* function prototype */
-#include "errormsg.h"
-#include "ast.h"
-// #include <string>
-#include <stdio.h>
-using namespace AST;
 #include <iostream>
+#include "ast.h"
+#include <string>
 #include <llvm/ADT/STLExtras.h>
+
+using namespace AST;
 
 std::unique_ptr<Root> root;
 
-void tigererror(char *s)
-{
-  std::cerr<<s<<std::endl;
-}
+int yylex(void); /* function prototype */
 
- void yyerror (char const *s) {
-   fprintf (stderr, "%s\n", s);
- }
+void yyerror(char *s) {
+    std::cerr << "syntactic error" << std::endl;
+}
 %}
 
+%code requires{
+#include "ast.h"
+
+using namespace AST;
+}
 
 %union {
-  int pos;
-  int ival;
-  std::string *sval;
-  Var *var;
+	int pos;
+	int ival;
+	std::string *sval;
+  Identifier *id;
+  Root *root;
   Exp *exp;
+  Var *var;
   Dec *dec;
   Type *type;
   Field *field;
-  //Efield *efield;
-  Root *root;
-  FunctionDec *functionDec;
+  
   TypeDec *typeDec;
-  std::vector<std::unique_ptr<Exp>> *expList;
+  FunctionDec *functionDec;
+  std::vector<std::unique_ptr<Exp>> *exps;
   std::vector<std::unique_ptr<Dec>> *decList;
-  std::vector<std::unique_ptr<Type>> *typeList;
   std::vector<std::unique_ptr<Field>> *fieldList;
   std::vector<std::unique_ptr<FieldExp>> *fieldExpList;
-  //std::vector<std::unique_ptr<Efield>> *efieldList;
-  std::vector<std::unique_ptr<NameType>> *nametypeList;
 }
 
 %token <sval> ID STRING
@@ -54,7 +52,7 @@ void tigererror(char *s)
 %type <var> lvalue
 %type <root> root
 %type <exp> exp let cond
-%type <expList> arglist nonarglist explist
+%type <exps> arglist nonarglist explist
 %type <type> ty
 %type <dec> dec vardec
 %type <decList> decs

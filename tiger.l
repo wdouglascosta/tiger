@@ -155,7 +155,7 @@ false     {adjust(); return FALSE;}
   /* Identifiers. */
 [a-zA-Z]+[_0-9a-zA-Z]* {
                          adjust();
-                         yylval.sval = strdup(yytext);
+                         yylval.sval = new std::string(yytext);
                          return ID;
                        }
 
@@ -202,7 +202,7 @@ false     {adjust(); return FALSE;}
     \" {
           adjust();
           BEGIN(INITIAL);
-          yylval.sval = strdup(string_buffer);
+          yylval.sval = new std::string(string_buffer);
           return STRING;
        }
 
