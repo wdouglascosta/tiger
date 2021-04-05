@@ -4,12 +4,12 @@
 #include <stdlib.h>
 #include "util.h"
 #include "y.tab.h"
-#include "y.tab.c"
+// #include "y.tab.c"
 #include "errormsg.h"
 
-#include "ast.h"
+// #include "ast.h"
 #include <iostream>
-using namespace AST;
+// using namespace AST;
 #include <cstring>
 #include <unistd.h>
 

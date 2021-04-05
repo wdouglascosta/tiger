@@ -5,6 +5,7 @@
 #include <llvm/ADT/STLExtras.h>
 
 using namespace AST;
+using namespace std;
 
 std::unique_ptr<Root> root;
 

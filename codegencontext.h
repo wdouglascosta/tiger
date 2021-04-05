@@ -1,6 +1,5 @@
 #ifndef CODEGENCONTEXT_H
 #define CODEGENCONTEXT_H
-
 #include "ast.h"
 #include "symboltable.h"
 #include <llvm/IR/Constant.h>
