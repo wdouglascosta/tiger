@@ -34,8 +34,8 @@ parse.o: parse.c errormsg.h util.h
 	cc -g -c parse.c
 
 #make lex (generates the lexical analyzer files)
-lex: y.tab.o lex.yy.o driver.o errormsg.o util.o
-	g++ -g -o lex y.tab.o driver.o lex.yy.o errormsg.o util.o 
+lex: y.tab.o lex.yy.o driver.o errormsg.o util.o ast.o
+	g++ -g -o lex y.tab.o driver.o lex.yy.o errormsg.o util.o ast.o
 
 driver.o: driver.c y.tab.h errormsg.h util.h
 	cc -g -c driver.c

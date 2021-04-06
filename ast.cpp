@@ -1,6 +1,6 @@
 #include "ast.h"
 #include <llvm/IR/DerivedTypes.h>
-#include <utils/symboltable.h>
+#include "symboltable.h"
 #include <iostream>
 
 using namespace AST;
