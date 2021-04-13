@@ -19,17 +19,17 @@ int main(int argc, char **argv)
   }
 
   char *filename = argv[1];
-
+  printf("\nIniciando a execução do compilador\n");
+  printf("\nExecutando 'parser'\n");
   A_exp prg = parse(filename);
   int IS_ERRORS;
   if (prg != NULL)
   {
-    printf("\n[ ANALISE SINTATICA ] Completada! \n");
-    printf("[ ANALISE SEMANTICA ] Iniciando!\n");
+    printf("Iniciando analise semantica\n");
     SEM_transProg(prg, &IS_ERRORS);
-    printf("[ ANALISE SEMANTICA ] Completada!\n");
+    printf("Finalizada analise semantica\n");
   }else{
-    printf("[ ANALISE SEMANTICA ] Não entrou!\n");
+    printf("Erro! Parser não retornou uma estrutura válida!\n");
   }
 
   if(!IS_ERRORS){
@@ -38,15 +38,15 @@ int main(int argc, char **argv)
     treeFileName = remove_ext(treeFileName, '.', '/');
     strcat(treeFileName, ".arv");
     FILE* treefile = fopen(treeFileName, "w+");
-    printf("[ EMISSÃO DA ARVORE ] Iniciando!\n");
+    printf("Iniciando geração da Arvore\n");
     pr_exp(treefile, prg, 0);
-    printf("[ EMISSÃO DA ARVORE ] Completada!\n");
+    printf("Fim!\n");
 
     char *emit = "-llvm-emit";
     if(argc == 3 && (strcmp(emit, argv[2]) == 0)){
-      printf("[ GERACAO DE CODIGO ] Iniciando!\n");
+      printf("Iniciando geração de codigo!\n");
       geraCodigoIntermediario(filename, prg);
-      printf("[ GERACAO DE CODIGO ] Completada!\n");
+      printf("Fim da geração de codigo\n");
     }
   }
 
