@@ -1,63 +1,56 @@
-LLVM_INCLUDE = -I/usr/lib/llvm-10/include
-LLVM_LIBS = -L /usr/lib/llvm-10/lib
+compilador.tge: parsetest.o tiger.tab.o lex.yy.o errormsg.o util.o parse.o symbol.o table.o absyn.o prabsyn.o types.o analise_semantica.o codigo_intermediario.o
+	gcc -g parsetest.o tiger.tab.o lex.yy.o errormsg.o util.o parse.o symbol.o table.o absyn.o prabsyn.o types.o analise_semantica.o codigo_intermediario.o 
 
-#make full (delete dynamic files and generates lexical, syntactic and semantic analyzer files)
-full: clean lex parse semantic
+parsetest.o: parsetest.c parse.h prabsyn.h
+	gcc -g -c parsetest.c
 
-#make semantic (generates the semantic analyzer files)
-semantic: runtime.o symboltable.o codegencontext.o codegen.o ast.o semantic.o
-	g++ -g -o semantic runtime.o symboltable.o codegencontext.o codegen.o ast.o semantic.o $(LLVM_LIBS) -lLLVM-10
+tiger.tab.o: tiger.tab.c
+	gcc -g -c tiger.tab.c
 
-semantic.o: semantic.cpp ast.h
-	g++ $(LLVM_INCLUDE) -g -c semantic.cpp
-
-ast.o: ast.cpp ast.h symboltable.h
-	g++ $(LLVM_INCLUDE) -g -c ast.cpp
-
-codegen.o: codegen.cpp codegencontext.h ast.h
-	g++ $(LLVM_INCLUDE) -g -c codegen.cpp
-
-codegencontext.o: codegencontext.cpp codegencontext.h
-	g++ $(LLVM_INCLUDE) -g -c codegencontext.cpp
-
-runtime.o: runtime.cpp
-	g++ $(LLVM_INCLUDE) -g -c runtime.cpp
-
-symboltable.o: symboltable.cpp symboltable.h
-	g++ $(LLVM_INCLUDE) -g -c symboltable.cpp
-
-#make parse (generates the syntatic analyzer files)
-parse: parse.o y.tab.o lex.yy.o errormsg.o util.o
-	cc -g -o parse parse.o y.tab.o lex.yy.o errormsg.o util.o
-
-parse.o: parse.c errormsg.h util.h
-	cc -g -c parse.c
-
-#make lex (generates the lexical analyzer files)
-lex: y.tab.o lex.yy.o driver.o errormsg.o util.o ast.o
-	g++ -g -o lex y.tab.o driver.o lex.yy.o errormsg.o util.o ast.o
-
-driver.o: driver.c y.tab.h errormsg.h util.h
-	cc -g -c driver.c
+tiger.tab.c: tiger.y
+	bison -dv tiger.y 
 
 errormsg.o: errormsg.c errormsg.h util.h
-	cc -g -c errormsg.c
+	gcc -g -c errormsg.c
 
-lex.yy.o: lex.yy.c errormsg.h util.h
-	g++ -g -c $(LLVM_INCLUDE) lex.yy.c
+lex.yy.o: lex.yy.c errormsg.h util.h symbol.h absyn.h 
+	gcc -g -c lex.yy.c
 
 lex.yy.c: tiger.l
-	lex tiger.l
+	flex tiger.l
 
 util.o: util.c util.h
-	cc -g -c util.c
+	gcc -g -c util.c
 
-y.tab.o: y.tab.c
-	g++ $(LLVM_INCLUDE) -g -c y.tab.c
+parse.o: parse.c parse.h absyn.h errormsg.h util.h
+	gcc -g -c parse.c
 
-y.tab.c: tiger.y
-	yacc -dtv tiger.y
+symbol.o: symbol.c symbol.h util.h table.h
+	gcc -g -c symbol.c
 
-#make clean (delete dynamic files)
+table.o: table.c table.h util.h
+	gcc -g -c table.c
+
+absyn.o: absyn.c util.h symbol.h absyn.h
+	gcc -g -c absyn.c
+
+prabsyn.o: prabsyn.c prabsyn.h symbol.h util.h absyn.h
+	gcc -g -c prabsyn.c
+
+env.o: env.c env.h util.h symbol.h
+	gcc -g -c env.c
+
+types.o: types.c util.h symbol.h types.h
+	gcc -g -c types.c
+
+semant.o: semant.c semant.h env.h absyn.h types.h table.h
+	gcc -g -c semant.c
+
+analise_semantica.o: absyn.h types.h table.h
+	gcc -g -c analise_semantica.c
+
+codigo_intermediario.o: absyn.h util.h symbol.h analise_semantica.h
+	gcc -g -c codigo_intermediario.c
+
 clean: 
-	rm -f *.out* *.o lex parse lex.yy.c *.tab.c *.tab.h *.tab.grm *.h.gch *.output.yy.c *.tab.c *.tab.h *.output
+	rm -f a.out parsetest.o tiger.tab.o lex.yy.o errormsg.o util.o parse.o symbol.o table.o absyn.o prabsyn.o env.o types.o semant.o analise_semantica.o codigo_intermediario.o tiger.output tiger.tab.c tiger.tab.h

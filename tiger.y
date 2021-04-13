@@ -1,191 +1,193 @@
 %{
-#include <iostream>
-#include "ast.h"
-#include <string>
-#include <llvm/ADT/STLExtras.h>
+#include <stdio.h>
+#include "util.h"
+#include "symbol.h"
+#include "errormsg.h"
+#include "absyn.h"
 
-using namespace AST;
-using namespace std;
-
-std::unique_ptr<Root> root;
+#define YYDEBUG 1
 
 int yylex(void); /* function prototype */
 
-void yyerror(char *s) {
-    std::cerr << "syntactic error" << std::endl;
+A_exp absyn_root;
+
+void yyerror(char *s)
+{
+  EM_error(EM_tokPos, "%s", s);
 }
+
 %}
 
-%code requires{
-#include "ast.h"
-
-using namespace AST;
-}
-
 %union {
-	int pos;
-	int ival;
-	std::string *sval;
-  Identifier *id;
-  Root *root;
-  Exp *exp;
-  Var *var;
-  Dec *dec;
-  Type *type;
-  Field *field;
-  
-  TypeDec *typeDec;
-  FunctionDec *functionDec;
-  std::vector<std::unique_ptr<Exp>> *exps;
-  std::vector<std::unique_ptr<Dec>> *decList;
-  std::vector<std::unique_ptr<Field>> *fieldList;
-  std::vector<std::unique_ptr<FieldExp>> *fieldExpList;
+  int pos;
+  int ival;
+  string sval;
+  A_var var;
+  A_exp exp;
+  A_dec dec;
+  A_ty ty;
+  A_decList decList;
+  A_expList expList;
+  A_field field;
+  A_fieldList fieldList;
+  A_efield efield;
+  A_efieldList efieldList;
+  A_paramList paramList;
 }
 
 %token <sval> ID STRING
 %token <ival> INT
 
-%token
-  COMMA COLON SEMICOLON LPAREN RPAREN LBRACK RBRACK LBRACE RBRACE DOT
-  PLUS MINUS TIMES DIVIDE EQ NEQ LT LE GT GE AND OR ASSIGN
-  ARRAY IF THEN ELSE WHILE FOR TO DO LET IN END OF BREAK NIL FUNCTION VAR TYPE BOOL TRUE FALSE
-
+%type <exp> exp program funcall rec_creation exp_or exp_or_rec exp_and exp_and_rec exp_compa exp_add exp_add_rec exp_mul exp_mul_rec exp_nega exp_seq factor
 %type <var> lvalue
-%type <root> root
-%type <exp> exp let cond
-%type <exps> arglist nonarglist explist
-%type <type> ty
-%type <dec> dec vardec
+%type <expList> argseq expseq
+%type <efieldList> efield_seq
+%type <efield> efield
 %type <decList> decs
-%type <fieldList> tyfields
+%type <dec> dec tydec vardec fundec
+%type <ty> ty func_ty
+%type <fieldList> tyfields tail_tyfields
 %type <field> tyfield
-%type <functionDec> fundec
-%type <typeDec> tydec
-%type <fieldExpList> reclist
-%type <sval> id
+%type <paramList> ty_param ty_param_tail
 
-%nonassoc LOW
-%nonassoc THEN DO TYPE FUNCTION ID
-%nonassoc ASSIGN LBRACK ELSE OF COMMA
-%left OR
-%left AND
-%nonassoc EQ NEQ LE LT GT GE
-%left PLUS MINUS
-%left TIMES DIVIDE
-%left UMINUS
+%token 
+  COMMA COLON SEMICOLON LPAREN RPAREN LBRACK RBRACK 
+  LBRACE RBRACE DOT 
+  PLUS MINUS TIMES DIVIDE EQ NEQ LT LE GT GE
+  AND OR ASSIGN
+  ARRAY IF THEN ELSE LET IN END OF 
+  NIL
+  FUNCTION VAR TYPE FUNC_RETURN 
 
-%start prog
+%start program
 
 %%
 
-prog:           root                            {root=std::unique_ptr<Root>($1);}
-                
-root:           /* empty */                     {$$=nullptr;}
-                | exp								            {$$=new Root(std::unique_ptr<Exp>($1));}
+program:  exp                           { absyn_root = $1; }
+exp:  lvalue ASSIGN exp                 {$$ = A_AssignExp(EM_tokPos, $1, $3); } 
+   |  exp_or                            {$$ = $1;} 
+   ; 
 
-exp:              INT                       		{$$=new IntExp($1);}
-                | STRING							          {$$=new StringExp(*$1); delete $1;}
-                | NIL								            {$$=new NilExp();}
-                | lvalue							          {$$=new VarExp(std::unique_ptr<Var>($1));}
-                | lvalue ASSIGN exp					    {$$=new AssignExp(std::unique_ptr<Var>($1), std::unique_ptr<Exp>($3));}
-                | LPAREN explist RPAREN				  {$$=new SequenceExp(std::move(*$2));}
-                | cond						    	        {$$=$1;}
-                | let						    	          {$$=$1;}
-                | exp OR exp						        {$$=new IfExp(std::unique_ptr<Exp>($1), std::unique_ptr<Exp>(new IntExp(1)), std::unique_ptr<Exp>($3));}
-                | exp AND exp						        {$$=new IfExp(std::unique_ptr<Exp>($1), std::unique_ptr<Exp>($3), std::unique_ptr<Exp>(new IntExp(0)));}
-                | exp LT exp						        {$$=new BinaryExp(BinaryExp::LTH, std::unique_ptr<Exp>($1), std::unique_ptr<Exp>($3));}
-                | exp GT exp						        {$$=new BinaryExp(BinaryExp::GTH, std::unique_ptr<Exp>($1), std::unique_ptr<Exp>($3));}
-                | exp LE exp						        {$$=new BinaryExp(BinaryExp::LEQ, std::unique_ptr<Exp>($1), std::unique_ptr<Exp>($3));}
-                | exp GE exp						        {$$=new BinaryExp(BinaryExp::GEQ, std::unique_ptr<Exp>($1), std::unique_ptr<Exp>($3));}
-                | exp PLUS exp						      {$$=new BinaryExp(BinaryExp::ADD, std::unique_ptr<Exp>($1), std::unique_ptr<Exp>($3));}
-                | exp MINUS exp						      {$$=new BinaryExp(BinaryExp::SUB, std::unique_ptr<Exp>($1), std::unique_ptr<Exp>($3));}
-                | exp TIMES exp						      {$$=new BinaryExp(BinaryExp::MUL, std::unique_ptr<Exp>($1), std::unique_ptr<Exp>($3));}
-                | exp DIVIDE exp					      {$$=new BinaryExp(BinaryExp::DIV, std::unique_ptr<Exp>($1), std::unique_ptr<Exp>($3));}
-                | MINUS exp %prec UMINUS			  {$$=new BinaryExp(BinaryExp::SUB, std::unique_ptr<Exp>(new IntExp(0)), std::unique_ptr<Exp>($2));}
-                | exp EQ exp						        {$$=new BinaryExp(BinaryExp::EQU, std::unique_ptr<Exp>($1), std::unique_ptr<Exp>($3));}
-                | exp NEQ exp						        {$$=new BinaryExp(BinaryExp::NEQU, std::unique_ptr<Exp>($1), std::unique_ptr<Exp>($3));}
-                | id LPAREN arglist RPAREN			{$$=new CallExp(*$1, std::move(*$3)); delete $1;}
-                | id LBRACK exp RBRACK OF exp		{$$=new ArrayExp(*$1, std::unique_ptr<Exp>($3), std::unique_ptr<Exp>($6)); delete $1;}
-                | id LBRACE reclist RBRACE			{$$=new RecordExp(*$1, std::move(*$3)); delete $1;}
-                | BREAK								          {$$=new BreakExp();}
-                ;
+exp_or:  exp_and exp_or_rec             {$$ = A_ExpExp($1, $2);}  
+exp_or_rec:  OR exp_and exp_or_rec      {$$ = A_IfExp2(EM_tokPos, $<exp>0, A_IntExp(EM_tokPos, 1), $2, $3);} 
+          |                             {$$ = NULL;} 
+          ;  
 
-reclist:        /* empty */                     {$$=new std::vector<std::unique_ptr<FieldExp>>();}
-                | id EQ exp							        {$$=new std::vector<std::unique_ptr<FieldExp>>();
-                                                  $$->push_back(std::make_unique<FieldExp>(*$1, std::unique_ptr<Exp>($3)));
-                                                  delete $1;}
-                | id EQ exp	COMMA reclist		    {$$=$5; $5->push_back(std::make_unique<FieldExp>(*$1, std::unique_ptr<Exp>($3))); delete $1;}
+exp_and:  exp_compa exp_and_rec         {$$ = A_ExpExp($1, $2);} 
+exp_and_rec:  AND exp_compa exp_and_rec {$$ = A_IfExp2(EM_tokPos, $<exp>0, A_IntExp(EM_tokPos, 0), $2, $3);} 
+           |                            {$$ = NULL;} 
+           ; 
 
-let:              LET decs IN explist END			  {$$=new LetExp(std::move(*$2), std::make_unique<SequenceExp>(std::move(*$4)));}
-                ;
-
-arglist:        /* empty */							        {$$=new std::vector<std::unique_ptr<Exp>>();}
-                | nonarglist						        {$$=$1;}
-                ;
-
-nonarglist:       exp								            {$$=new std::vector<std::unique_ptr<Exp>>();$$->push_back(std::unique_ptr<Exp>($1));}
-                | exp COMMA nonarglist				  {$$=$3; $3->push_back(std::unique_ptr<Exp>($1));}
-                ;
-
-decs:           /* empty */							        {$$=new std::vector<std::unique_ptr<Dec>>();}
-                | dec decs							        {$$=$2; $2->push_back(std::unique_ptr<Dec>($1));}
-                ;
-
-dec:              tydec 							{$$=$1;}
-                | vardec							{$$=$1;}
-                | fundec							{$$=$1;}
-                ;
-
-// tydecs:           tydec	%prec LOW       {$$=new TypeDec(A_NametyList($1, NULL));}
-                //| tydec tydecs						{$$=new TypeDec(A_NametyList($1, $2->u.type));}
-                //;
-lvalue:           id %prec LOW              {$$=new SimpleVar(*$1); delete $1;}
-                | id LBRACK exp RBRACK 		  {$$=new SubscriptVar(std::make_unique<SimpleVar>(*$1), std::unique_ptr<Exp>($3)); delete $1;}
-                | lvalue LBRACK exp RBRACK	{$$=new SubscriptVar(std::unique_ptr<Var>($1), std::unique_ptr<Exp>($3));}
-                | lvalue DOT id						  {$$=new FieldVar(std::unique_ptr<Var>($1), *$3); delete $3;}
-                ;
-
-explist:		/* empty */							        {$$=new std::vector<std::unique_ptr<Exp>>();}
-                | exp								        {$$=new std::vector<std::unique_ptr<Exp>>(); $$->push_back(std::unique_ptr<Exp>($1));}
-                | exp SEMICOLON explist			{$$=$3; $3->push_back(std::unique_ptr<Exp>($1));}
-                ;
-
-cond:             IF exp THEN exp ELSE exp	      {$$=new IfExp(std::unique_ptr<Exp>($2), std::unique_ptr<Exp>($4), std::unique_ptr<Exp>($6));}
-                | IF exp THEN exp					        {$$=new IfExp(std::unique_ptr<Exp>($2), std::unique_ptr<Exp>($4), nullptr);}
-                | WHILE exp DO exp					      {$$=new WhileExp(std::unique_ptr<Exp>($2), std::unique_ptr<Exp>($4));}
-                | FOR id ASSIGN exp TO exp DO exp	{$$=new ForExp(*$2, std::unique_ptr<Exp>($4), std::unique_ptr<Exp>($6), std::unique_ptr<Exp>($8)); delete $2;}
-                ;
-
-tydec:            TYPE id EQ ty						        {$$=new TypeDec(*$2, std::unique_ptr<Type>($4)); delete $2;}
-                ;
-
-ty:               id								              {$$=new NameType(*$1); delete $1;}
-                | LBRACE tyfields RBRACE			    {$$=new RecordType(std::move(*$2));}
-                | ARRAY OF id						          {$$=new ArrayType(*$3); delete $3;}
-                ;
-tyfields:       /* empty */							          {$$=new std::vector<std::unique_ptr<Field>>();}
-                | tyfield							            {$$=new std::vector<std::unique_ptr<Field>>(); $$->push_back(std::unique_ptr<Field>($1));}
-                | tyfield COMMA tyfields			    {$$=$3; $3->push_back(std::unique_ptr<Field>($1));}
-                ;
-
-tyfield:          id COLON id						          {$$=new Field(*$1, *$3); delete $1; delete $3;}
-                ;
-
-vardec:           VAR id ASSIGN exp					      {$$=new VarDec(*$2, "", std::unique_ptr<Exp>($4)); delete $2;}
-                | VAR id COLON id ASSIGN exp		  {$$=new VarDec(*$2, *$4, std::unique_ptr<Exp>($6)); delete $2; delete $4;}
-                ;
-
-id:               ID								{$$=$1;}
-                ;
-
-//fundecs:          fundec %prec LOW        {$$=A_FunctionDec(EM_tokPos, A_FundecList($1, NULL));}
-                //| fundec fundecs					{$$=A_FunctionDec(EM_tokPos, A_FundecList($1, $2->u.function));}
-                //;
-
-fundec:           FUNCTION id LPAREN tyfields RPAREN EQ exp				    {$$=new FunctionDec(*$2, std::make_unique<Prototype>(*$2, std::move(*$4), ""), std::unique_ptr<Exp>($7)); delete $2;}
-                | FUNCTION id LPAREN tyfields RPAREN COLON id EQ exp	{$$=new FunctionDec(*$2, std::make_unique<Prototype>(*$2, std::move(*$4), *$7), std::unique_ptr<Exp>($9)); delete $2;}
-                ;
+exp_compa: exp_add EQ  exp_add          {$$ = A_OpExp(EM_tokPos, A_eqOp, $1, $3);} 
+         | exp_add NEQ exp_add          {$$ = A_OpExp(EM_tokPos, A_neqOp, $1, $3);} 
+         | exp_add GT exp_add           {$$ = A_OpExp(EM_tokPos, A_gtOp, $1, $3);} 
+         | exp_add GE exp_add           {$$ = A_OpExp(EM_tokPos, A_geOp, $1, $3);} 
+         | exp_add LT exp_add           {$$ = A_OpExp(EM_tokPos, A_ltOp, $1, $3);} 
+         | exp_add LE exp_add           {$$ = A_OpExp(EM_tokPos, A_leOp, $1, $3);}
+         | exp_add                      {$$ = $1;} 
+         ; 
 
 
+exp_add:  exp_mul exp_add_rec             {$$ = A_ExpExp($1, $2);}  
 
+exp_add_rec:  PLUS exp_mul exp_add_rec    {$$ = A_OpExp2(EM_tokPos, A_plusOp, $<exp>0, $2, $3);} 
+           |  MINUS exp_mul exp_add_rec   {$$ = A_OpExp2(EM_tokPos, A_minusOp, $<exp>0, $2, $3);} 
+           |                              {$$ = NULL;} 
+           ; 
+exp_mul:  exp_nega exp_mul_rec            {$$ = A_ExpExp($1, $2);}
 
+exp_mul_rec:  TIMES exp_nega exp_mul_rec  { $$ = A_OpExp2(EM_tokPos, A_timesOp, $<exp>0, $2, $3); }
+           |  DIVIDE exp_nega exp_mul_rec { $$ = A_OpExp2(EM_tokPos, A_divideOp, $<exp>0, $2, $3); } 
+           |                              {$$ = NULL;} 
+           ; 
+
+exp_nega:  MINUS exp_nega                  {$$ = A_OpExp(EM_tokPos, A_minusOp, A_IntExp(0, 0), $2);} 
+        |  exp_seq                        {$$ = $1;} 
+        ; 
+exp_seq:  LPAREN expseq RPAREN            {$$ = A_SeqExp(EM_tokPos, $2);} 
+       |  factor                          {$$ = $1;} 
+       ; 
+factor:  NIL                              { $$ = A_NilExp(EM_tokPos); } 
+      |  INT                              { $$ = A_IntExp(EM_tokPos, yylval.ival); } 
+      |  STRING                           { $$ = A_StringExp(EM_tokPos, yylval.sval); } 
+      |  LET decs IN expseq END           { $$ = A_LetExp(EM_tokPos, $2, $4); }
+      |  ID LBRACK exp RBRACK OF exp      { $$ = A_ArrayExp(EM_tokPos, S_Symbol($1), $3, $6); }
+      |  IF exp THEN exp ELSE exp         { $$ = A_IfExp(EM_tokPos, $2, $4, $6); }
+      |  IF exp THEN exp                  { $$ = A_IfExp(EM_tokPos, $2, $4, NULL); }
+      |  lvalue                           { $$ = A_VarExp(EM_tokPos, $1); }
+      |  funcall                          {$$ = $1;} 
+      |  rec_creation                     {$$ = $1;} 
+      ;
+expseq: exp                   { $$ = A_ExpList($1, NULL); }
+      |                       { $$ = NULL; }
+      ;
+funcall:  ID LPAREN RPAREN          { $$ = A_CallExp(EM_tokPos, S_Symbol($1), NULL); }
+       |  ID LPAREN argseq RPAREN   { $$ = A_CallExp(EM_tokPos, S_Symbol($1), $3); }
+       ;
+argseq: exp COMMA argseq  { $$ = A_ExpList($1, $3); }
+      | exp               { $$ = A_ExpList($1, NULL); }
+      ;
+rec_creation: ID LBRACE RBRACE            { $$ = A_RecordExp(EM_tokPos, S_Symbol($1), NULL); }
+            | ID LBRACE efield_seq RBRACE { $$ = A_RecordExp(EM_tokPos, S_Symbol($1), $3); }
+            ;
+efield_seq: efield COMMA efield_seq { $$ = A_EfieldList($1, $3); }
+         |  efield                  { $$ = A_EfieldList($1, NULL); }
+         ;
+efield:  ID EQ exp  { $$ = A_Efield(S_Symbol($1), $3); }
+     ;
+
+decs: dec decs  { $$ = A_DecList($1, $2); }
+    |           { $$ = NULL; }
+    ;
+dec:  tydec   { $$ = $1; }
+   |  vardec  { $$ = $1; }
+   |  fundec  { $$ = $1; }
+   ;
+
+tydec:  TYPE ID EQ ty { $$ = A_TypeDec(EM_tokPos, S_Symbol($2), $4); }
+     ;
+ty: ID                      { $$ = A_NameTy(S_Symbol($1)); }
+  | LBRACE tyfields RBRACE  { $$ = A_RecordTy($2); }
+  | ARRAY OF ID             { $$ = A_ArrayTy(S_Symbol($3)); }
+  | func_ty                 { $$ = $1; }
+  ;
+
+func_ty: LPAREN ty_param RPAREN FUNC_RETURN ID           { $$ = A_FuncTySimpleTypeReturn($2,A_ParameterList(EM_tokPos, S_Symbol($5), NULL)); }
+       | LPAREN RPAREN FUNC_RETURN ID                    { $$ = A_FuncTySimpleTypeReturn(NULL, A_ParameterList(EM_tokPos, S_Symbol($4), NULL)); }
+       | ID FUNC_RETURN ID                               { $$ = A_FuncTySimpleTypeReturn(A_ParameterList(EM_tokPos, S_Symbol($1), NULL), A_ParameterList(EM_tokPos, S_Symbol($3), NULL)); }
+       | LPAREN ty_param RPAREN FUNC_RETURN func_ty      { $$ = A_FuncTyFuncReturn($2,$5); }
+       | LPAREN RPAREN FUNC_RETURN func_ty               { $$ = A_FuncTyFuncReturn(NULL,$4); }
+       | ID FUNC_RETURN func_ty                          { $$ = A_FuncTyFuncReturn(A_ParameterList(EM_tokPos, S_Symbol($1), NULL), $3); }
+       ;
+
+ty_param: ID ty_param_tail  { $$ = A_ParameterList(EM_tokPos, S_Symbol($1), $2); }
+        ;
+
+ty_param_tail: COMMA ID ty_param_tail { $$ = A_ParameterList(EM_tokPos, S_Symbol($2), $3); }
+             |                        { $$ = NULL; }
+             ;
+
+tyfields: tyfield tail_tyfields { $$ = A_FieldList($1, $2); }
+        |                       { $$ = NULL; }
+        ;
+
+tail_tyfields:  COMMA tyfield tail_tyfields { $$ = A_FieldList($2, $3); }
+             |                              { $$ = NULL; }
+             ;
+tyfield:  ID COLON ID { $$ = A_Field(EM_tokPos, S_Symbol($1), S_Symbol($3)); }
+       ;
+
+vardec: VAR ID ASSIGN exp           { $$ = A_VarDec(EM_tokPos, S_Symbol($2), NULL, $4); }
+      | VAR ID COLON ID ASSIGN exp  { $$ = A_VarDec(EM_tokPos, S_Symbol($2), S_Symbol($4), $6); }
+      ;
+
+fundec: FUNCTION ID LPAREN tyfields RPAREN EQ exp           {$$ = A_Fundec(EM_tokPos, S_Symbol($2), $4, NULL, $7); }
+      | FUNCTION ID LPAREN tyfields RPAREN COLON ID EQ exp  {$$ = A_Fundec(EM_tokPos, S_Symbol($2), $4, S_Symbol($7), $9); }
+      ;
+
+lvalue: ID            { $$ = A_SimpleVar(EM_tokPos, S_Symbol($1)); }
+      | ID DOT ID     { $$ = A_FieldVar(EM_tokPos, A_SimpleVar(EM_tokPos, S_Symbol($1)), S_Symbol($3)); }
+      | lvalue DOT ID { $$ = A_FieldVar(EM_tokPos, $1, S_Symbol($3)); }
+      | ID LBRACK exp RBRACK      { $$ = A_SubscriptVar(EM_tokPos, A_SimpleVar(EM_tokPos, S_Symbol($1)), $3); }
+      | lvalue LBRACK exp RBRACK  { $$ = A_SubscriptVar(EM_tokPos, $1, $3); }
+      ;
