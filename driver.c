@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
     }
     yydebug = 0;
     // faz o parser do código fonte
-    yyparse(); 
+    // yyparse(); 
     
 
 }

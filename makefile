@@ -1,33 +1,56 @@
-# We cannot use the -std=c90 flag here, because the book's code uses the
-# strdup function, so it seems like its written in another C-dialect...
-CFLAGS = -g -Wall -Wextra
-CC = g++
+compilador.tge: parsetest.o tiger.tab.o lex.yy.o errormsg.o util.o parse.o symbol.o table.o absyn.o prabsyn.o types.o analise_semantica.o codigo_intermediario.o
+	gcc -g parsetest.o tiger.tab.o lex.yy.o errormsg.o util.o parse.o symbol.o table.o absyn.o prabsyn.o types.o analise_semantica.o codigo_intermediario.o 
 
-all: tc
-
-tc: driver.o errormsg.o util.o tiger.tab.o lex.yy.o
-	$(CC) $(CFLAGS) -o tc.o driver.o lex.yy.o errormsg.o util.o tiger.tab.o
-
-driver.o: driver.c errormsg.h util.h
-	$(CC) $(CFLAGS) -c driver.c
-
-errormsg.o: errormsg.c errormsg.h util.h
-	$(CC) $(CFLAGS) -c errormsg.c
-
-lex.yy.o: lex.yy.c errormsg.h util.h
-	$(CC) $(CFLAGS) -c lex.yy.c
+parsetest.o: parsetest.c parse.h prabsyn.h
+	gcc -g -c parsetest.c
 
 tiger.tab.o: tiger.tab.c
-	$(CC) $(CFLAGS) -c tiger.tab.c
+	gcc -g -c tiger.tab.c
+
+tiger.tab.c: tiger.y
+	bison -dv tiger.y 
+
+errormsg.o: errormsg.c errormsg.h util.h
+	gcc -g -c errormsg.c
+
+lex.yy.o: lex.yy.c errormsg.h util.h symbol.h absyn.h 
+	gcc -g -c lex.yy.c
 
 lex.yy.c: tiger.l
-	lex tiger.l
+	flex tiger.l
 
 util.o: util.c util.h
-	$(CC) $(CFLAGS) -c util.c
+	gcc -g -c util.c
 
-tiger.tab.c: 
-	bison -d -t -v tiger.y
+parse.o: parse.c parse.h absyn.h errormsg.h util.h
+	gcc -g -c parse.c
+
+symbol.o: symbol.c symbol.h util.h table.h
+	gcc -g -c symbol.c
+
+table.o: table.c table.h util.h
+	gcc -g -c table.c
+
+absyn.o: absyn.c util.h symbol.h absyn.h
+	gcc -g -c absyn.c
+
+prabsyn.o: prabsyn.c prabsyn.h symbol.h util.h absyn.h
+	gcc -g -c prabsyn.c
+
+env.o: env.c env.h util.h symbol.h
+	gcc -g -c env.c
+
+types.o: types.c util.h symbol.h types.h
+	gcc -g -c types.c
+
+semant.o: semant.c semant.h env.h absyn.h types.h table.h
+	gcc -g -c semant.c
+
+analise_semantica.o: absyn.h types.h table.h
+	gcc -g -c analise_semantica.c
+
+codigo_intermediario.o: absyn.h util.h symbol.h analise_semantica.h
+	gcc -g -c codigo_intermediario.c
 
 clean: 
-	rm -f tc *.o lex.yy.c *.tab.c *.tab.h *.output 
+	rm -f a.out parsetest.o tiger.tab.o lex.yy.o errormsg.o util.o parse.o symbol.o table.o absyn.o prabsyn.o env.o types.o semant.o analise_semantica.o codigo_intermediario.o tiger.output tiger.tab.c tiger.tab.h
