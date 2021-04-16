@@ -6,7 +6,6 @@
 #include "errormsg.h"
 #include "parse.h"
 #include "prabsyn.h"
-#include "codigo_intermediario.h"
 
 int main(int argc, char **argv)
 {
@@ -25,9 +24,7 @@ int main(int argc, char **argv)
   int IS_ERRORS;
   if (prg != NULL)
   {
-    printf("Iniciando analise semantica\n");
-    SEM_transProg(prg, &IS_ERRORS);
-    printf("Finalizada analise semantica\n");
+    printf("Arvore construída");
   }else{
     printf("Erro! Parser não retornou uma estrutura válida!\n");
   }
@@ -38,16 +35,10 @@ int main(int argc, char **argv)
     treeFileName = remove_ext(treeFileName, '.', '/');
     strcat(treeFileName, ".arv");
     FILE* treefile = fopen(treeFileName, "w+");
-    printf("Iniciando geração da Arvore\n");
+    printf("\nImprimindo a Arvore\n");
     pr_exp(treefile, prg, 0);
     printf("Fim!\n");
 
-    char *emit = "-llvm-emit";
-    if(argc == 3 && (strcmp(emit, argv[2]) == 0)){
-      printf("Iniciando geração de codigo!\n");
-      geraCodigoIntermediario(filename, prg);
-      printf("Fim da geração de codigo\n");
-    }
   }
 
   return 0;
