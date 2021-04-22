@@ -6,6 +6,7 @@
 #include "errormsg.h"
 #include "parse.h"
 #include "prabsyn.h"
+#include "analise_semantica.c"
 
 int main(int argc, char **argv)
 {
@@ -25,6 +26,7 @@ int main(int argc, char **argv)
   if (prg != NULL)
   {
     printf("Arvore construída");
+    SEM_transProg(prg, &IS_ERRORS);
   }else{
     printf("Erro! Parser não retornou uma estrutura válida!\n");
   }
