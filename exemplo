@@ -1,0 +1,6 @@
+exemplo
+
+if 5>6 then 15 else 20
+define dso_local i32 @main #0 {
+BLOCO
+}

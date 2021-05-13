@@ -11,6 +11,9 @@ void SEM_transProg(A_exp e, int *isErrors)
 
 struct expty ExpTy(Tr_exp exp, Ty_ty ty)
 {
+  if (ty->kind == Ty_Nil()){
+    //adicionar validação para precedência de mil
+  }
   struct expty e;
   e.exp = exp;
   e.ty = ty;
@@ -253,7 +256,7 @@ struct expty transIfExp(S_table vf_table, S_table ty_table, A_exp e)
     return ExpTy(NULL, elsee.ty);
   } else {
     if (then.ty != Ty_Void()) {
-      EM_error(e->pos, "Then não pode ser uma expressao com um tipo");
+      EM_error(e->pos, "Then inválido");
     }
     return ExpTy(NULL, Ty_Void());
   }
@@ -274,7 +277,7 @@ struct expty transArrayExp(S_table vf_table, S_table ty_table, A_exp e)
   }
 
   if (!isTypeEquivalent(init.ty,getPrimitiveType(typ)->u.array)) {
-    EM_error(e->pos, "o tipo do elemento passado nao bate com o tipo do array");
+    EM_error(e->pos, "o tipo do elemento passado nao corresponde com o tipo do array");
   }
 
   return ExpTy(NULL, typ);
@@ -480,7 +483,7 @@ void transTypeDec(S_table vf_table, S_table ty_table, A_dec d, A_decList tail)
     S_enter(ty_table, d->u.type.name, ty);
   }
   else{
-    EM_error(d->pos, "Não foi possivel declarar o tipo: %s", S_name(d->u.type.name));
+    EM_error(d->pos, "Declaração de tipo inválida: %s", S_name(d->u.type.name));
   }
 }
 

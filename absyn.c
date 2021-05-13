@@ -80,6 +80,15 @@ A_exp A_StringExp(A_pos pos, string s)
   return p;
 }
 
+A_exp A_BoolExp(A_pos pos, bool b)
+{
+  A_exp p = checked_malloc(sizeof(*p));
+  p->kind=A_stringExp;
+  p->pos=pos;
+  p->u.boolean=b;
+  return p;
+}
+
 A_exp A_CallExp(A_pos pos, S_symbol func, A_expList args)
 {
   A_exp p = checked_malloc(sizeof(*p));

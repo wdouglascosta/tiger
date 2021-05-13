@@ -37,6 +37,7 @@ void yyerror(char *s)
 
 %token <sval> ID STRING
 %token <ival> INT
+%token <ival> BOOLEAN
 
 %type <exp> exp program funcall rec_creation exp_or exp_or_rec exp_and exp_and_rec exp_compa exp_add exp_add_rec exp_mul exp_mul_rec exp_nega exp_seq factor
 %type <var> lvalue
@@ -110,6 +111,7 @@ exp_seq:  LPAREN expseq RPAREN            {$$ = A_SeqExp(EM_tokPos, $2);}
 factor:  NIL                              { $$ = A_NilExp(EM_tokPos); } 
       |  INT                              { $$ = A_IntExp(EM_tokPos, yylval.ival); } 
       |  STRING                           { $$ = A_StringExp(EM_tokPos, yylval.sval); } 
+      |  BOOLEAN                          { $$ = A_BoolExp(EM_tokPos, yylval.sval); } 
       |  LET decs IN expseq END           { $$ = A_LetExp(EM_tokPos, $2, $4); }
       |  ID LBRACK exp RBRACK OF exp      { $$ = A_ArrayExp(EM_tokPos, S_Symbol($1), $3, $6); }
       |  IF exp THEN exp ELSE exp         { $$ = A_IfExp(EM_tokPos, $2, $4, $6); }

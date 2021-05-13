@@ -1,0 +1,5 @@
+let
+	function nomeDaFuncao (a:int , b:string):int = a
+in
+	nomeDaFuncao(1, "one")
+end
