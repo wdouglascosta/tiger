@@ -11,9 +11,9 @@ void SEM_transProg(A_exp e, int *isErrors)
 
 struct expty ExpTy(Tr_exp exp, Ty_ty ty)
 {
-  if (ty->kind == Ty_Nil()){
-    //adicionar validação para precedência de mil
-  }
+  // if (ty->kind == Ty_Nil()){
+  //   //adicionar validação para precedência de mil
+  // }
   struct expty e;
   e.exp = exp;
   e.ty = ty;

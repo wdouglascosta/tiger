@@ -593,8 +593,9 @@ char *evaluateLetExp(FILE* arquive, A_exp e, int level){
 		evaluateDec(arquive, d->head, level);
 	}
 
+
 	if(level == 0){
-		fprintf(arquive, "define i32 @main() {\n");
+		fprintf(arquive, "target triple = \"x86_64-pc-linux-gnu\"\ndefine dso_local i32 @main() #0 {\n");
 	}
 
 	transSeqExp(vf_table, ty_table, e->u.let.body);
@@ -828,6 +829,7 @@ char *evaluateSeqExp(FILE* arquive, A_expList el, int level)
 }
 
 char *evaluateExpExp(FILE* arquive, A_exp e, int level){
+
 	if(e->right){
 		return evaluateExp(arquive, e->right, level);
     }else{
