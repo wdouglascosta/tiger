@@ -47,4 +47,4 @@ semant.o: semant.c semant.h env.h absyn.h types.h table.h
 	gcc -g -c semant.c
 
 clean: 
-	rm -f a.out parsetest.o tiger.tab.o lex.yy.o errormsg.o util.o parse.o symbol.o table.o absyn.o prabsyn.o env.o types.o semant.o tiger.output tiger.tab.c tiger.tab.h
+	rm -f a.out parsetest.o tiger.tab.o lex.yy.o errormsg.o util.o parse.o symbol.o table.o absyn.o prabsyn.o env.o types.o semant.o tiger.output tiger.tab.c tiger.tab.h testes1/*.ll testes1/*.arv testes2/*.ll testes2/*.arv testes3/*.ll testes3/*.arv
