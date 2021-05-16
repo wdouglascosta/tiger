@@ -1,0 +1,8 @@
+/* write a program using your new construction */
+let
+	var b: boolean := TRUE
+in 
+	b
+end
+
+
