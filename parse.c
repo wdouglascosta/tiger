@@ -17,7 +17,7 @@ A_exp parse(string fname)
 {
   EM_reset(fname);
   if (yyparse() == 0) { /* parsing worked */
-    printf("parse successfully!\n");
+    printf("parse executado com sucesso!\n");
     return absyn_root;
   }
   else return NULL;

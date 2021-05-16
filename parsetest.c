@@ -7,6 +7,7 @@
 #include "parse.h"
 #include "prabsyn.h"
 #include "analise_semantica.c"
+#include "codigo_intermediario.c"
 
 int main(int argc, char **argv)
 {
@@ -39,6 +40,9 @@ int main(int argc, char **argv)
     FILE* treefile = fopen(treeFileName, "w+");
     printf("\nImprimindo a Arvore\n");
     pr_exp(treefile, prg, 0);
+
+    printf("Geração de código LLVM\n");
+    geraCodigoIntermediario(filename, prg);
     printf("Fim!\n");
 
   }
